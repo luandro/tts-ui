@@ -1,11 +1,14 @@
 import fs from "node:fs";
-import path from "node:path";
-import Replicate from "replicate";
 import { writeFile } from "node:fs/promises";
+import path from "node:path";
 import removeMd from "remove-markdown";
+import Replicate from "replicate";
 const replicate = new Replicate();
 
-export async function callReplicate(text: string, audioDir: string): Promise<string> {
+export async function callReplicate(
+	text: string,
+	audioDir: string,
+): Promise<string> {
 	console.log("Starting callReplicate with text:", text);
 
 	const processedText = removeMd(text);

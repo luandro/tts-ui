@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div id="auth">
+      <h1>Audio Generator</h1>
+      <input type="password" id="password" placeholder="Enter password" />
+      <button onclick="authenticate()">Login</button>
+      <p id="auth-error" style="color: red; display: none;"></p>
+    </div>
+    <div id="generator" style="display: none;">
+      <textarea id="textArea" placeholder="Enter text or markdown to generate audio"></textarea>
+      <button onclick="generate()">Generate Audio</button>
+      <div class="audio-player">
+        <audio id="audio" controls style="display: none;"></audio>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div id="previous-audios">
+        <h1>Previous Audios</h1>
+        <div id="content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

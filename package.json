@@ -1,24 +1,24 @@
 {
-  "name": "tts-ui",
-  "module": "index.ts",
-  "scripts": {
-    "start": "bun src/server.ts",
-    "dev": "bun --watch src/server.ts",
-    "lint": "bunx biome format --write src"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/bun": "latest",
-    "lefthook": "^1.10.10"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "@elysiajs/static": "^1.2.0",
-    "dotenv": "^16.4.7",
-    "elysia": "^1.2.11",
-    "remove-markdown": "^0.6.0",
-    "replicate": "^1.0.1"
-  }
+	"name": "tts-ui",
+	"module": "index.ts",
+	"scripts": {
+		"start": "bun src/server.ts",
+		"dev": "bun --watch src/server.ts",
+		"lint": "bunx biome format --write src public"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bun": "latest",
+		"lefthook": "^1.10.10"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@elysiajs/static": "^1.2.0",
+		"dotenv": "^16.4.7",
+		"elysia": "^1.2.11",
+		"remove-markdown": "^0.6.0",
+		"replicate": "^1.0.1"
+	}
 }

@@ -1,6 +1,7 @@
-import { mkdirSync, existsSync } from "node:fs";
-import { Elysia } from "elysia";
+import { existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import path from "node:path";
 import { staticPlugin } from "@elysiajs/static";
+import { Elysia } from "elysia";
 import { callReplicate } from "./replicate";
 
 require("dotenv").config();
@@ -19,7 +20,9 @@ try {
 } catch (error) {
 	console.error(`Failed to create audio directory: ${error}`);
 	// Throw error since we need the audio directory to function
-	throw new Error("Could not create required audio directory. Please check permissions.");
+	throw new Error(
+		"Could not create required audio directory. Please check permissions.",
+	);
 }
 const app = new Elysia()
 	// Serve static files from audio directory
@@ -29,103 +32,79 @@ const app = new Elysia()
 			assets: AUDIO_DIR,
 		}),
 	)
-	// Serve UI HTML
-	.get("/", () => {
-		return new Response(
-			`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Audio Generator</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #auth, #content {
-      display: flex;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-    textarea {
-      width: 80%;
-      height: 60%;
-      font-size: 16px;
-      padding: 10px;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div id="auth">
-    <input type="password" id="password" placeholder="Enter password" />
-    <button onclick="authenticate()">Login</button>
-  </div>
-  <div id="content" style="display: none;">
-    <textarea id="textArea" placeholder="Enter text or markdown"></textarea>
-    <button onclick="generate()">Generate Audio</button>
-    <audio id="audio" controls style="display: none; margin-top: 20px;"></audio>
-  </div>
-  <script>
-    function authenticate() {
-      const pwd = document.getElementById('password').value;
-      if(pwd === '${AUTH_PASSWORD}') {
-        localStorage.setItem('auth', pwd);
-        document.getElementById('auth').style.display = 'none';
-        document.getElementById('content').style.display = 'flex';
-      } else {
-        alert('Incorrect password');
-      }
-    }
-    window.onload = function(){
-      const stored = localStorage.getItem('auth');
-      if(stored === '${AUTH_PASSWORD}') {
-        document.getElementById('auth').style.display = 'none';
-        document.getElementById('content').style.display = 'flex';
-      }
-    };
-    async function generate() {
-      const text = document.getElementById('textArea').value;
-      const auth = localStorage.getItem('auth');
-      const res = await fetch('/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, auth })
-      });
-      if(res.ok) {
-        console.log('Audio generated successfully');
-        const data = await res.json();
-        const audio = document.getElementById('audio');
-        audio.src = '/audio/' + data.audioFileName;
-        audio.style.display = 'block';
-        audio.play();
-      } else {
-        alert('Failed to generate audio');
-      }
-    }
-  </script>
-</body>
-</html>
-    `,
-			{
+	.use(
+		staticPlugin({
+			prefix: "",
+			assets: "public",
+		}),
+	)
+	// Auth endpoint
+	.post("/auth", ({ body }) => {
+		const { password } = body as { password: string };
+		if (password !== AUTH_PASSWORD) {
+			return new Response(JSON.stringify({ error: "Invalid password" }), {
+				status: 401,
 				headers: {
-					"Content-Type": "text/html",
+					"Content-Type": "application/json",
+					Authorization: "Bearer invalid",
 				},
+			});
+		}
+		return new Response(JSON.stringify({ success: true }), {
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${AUTH_PASSWORD}`,
 			},
-		);
+		});
+	})
+	// Get list of audio files endpoint
+	.get("/audios", async ({ headers }) => {
+		const auth = headers.authorization?.split(" ")[1];
+		if (auth !== AUTH_PASSWORD) {
+			return new Response(JSON.stringify({ error: "Unauthorized" }), {
+				status: 401,
+				headers: { "Content-Type": "application/json" },
+			});
+		}
+
+		try {
+			const files = readdirSync(AUDIO_DIR);
+			const audioFiles = [];
+			console.log("Files in audio directory:", files);
+			for (const file of files) {
+				if (file.endsWith(".mp3") || file.endsWith(".wav")) {
+					const filePath = path.join(AUDIO_DIR, file);
+					const stats = statSync(filePath);
+
+					audioFiles.push({
+						filename: file,
+						date: stats.mtime.toISOString(),
+					});
+				}
+			}
+
+			return new Response(JSON.stringify(audioFiles), {
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${AUTH_PASSWORD}`,
+				},
+			});
+		} catch (error) {
+			console.error("Error getting audio files:", error);
+			return new Response(
+				JSON.stringify({ error: "Failed to get audio files" }),
+				{
+					status: 500,
+					headers: { "Content-Type": "application/json" },
+				},
+			);
+		}
 	})
 
 	// Generate audio endpoint
-	.post("/generate", async ({ body }) => {
-		const { text, auth } = body as GenerateBody;
+	.post("/generate", async ({ body, headers }) => {
+		const { text } = body as GenerateBody;
+		const auth = headers.authorization?.split(" ")[1];
 		if (auth !== AUTH_PASSWORD) {
 			return new Response(JSON.stringify({ error: "Unauthorized" }), {
 				status: 401,
@@ -140,9 +119,11 @@ const app = new Elysia()
 		console.log("Audio filename:", audioFileName);
 
 		return new Response(JSON.stringify({ audioFileName }), {
-			headers: { "Content-Type": "application/json" },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${AUTH_PASSWORD}`,
+			},
 		});
 	})
 	.listen(3001);
-
 export default app;
