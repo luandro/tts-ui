@@ -8,6 +8,7 @@
 	--max-width: 800px;
 	--hover-color: #357abd;
 	--error-color: #dc3545;
+	--spinner-size: 20px;
 	--error-bg: #f8d7da;
 	--audio-bg: #f8f9fa;
 	--divider-color: #eee;
@@ -33,7 +34,7 @@ body {
 .container {
 	width: var(--container-width);
 	max-width: var(--max-width);
-	margin: var(--spacing) auto;
+	margin: 48px auto var(--spacing) auto;
 	background: white;
 	padding: var(--spacing);
 	border-radius: var(--border-radius);
@@ -70,7 +71,6 @@ textarea {
 }
 
 textarea {
-	padding-top: 50px;
 	min-height: 70vh;
 	resize: vertical;
 	line-height: 1.6;
@@ -79,6 +79,39 @@ textarea {
 input[type="password"]:focus,
 textarea:focus {
 	outline: none;
+}
+
+.button-group {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.spinner {
+	display: none;
+	width: var(--spinner-size);
+	height: var(--spinner-size);
+	border: 3px solid var(--secondary-color);
+	border-top: 3px solid var(--primary-color);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin-left: 10px;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.audio-player {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: var(--spacing) 0;
 	border-color: var(--primary-color);
 	box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
@@ -110,16 +143,7 @@ button:disabled {
 	box-shadow: none;
 }
 
-.audio-player {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	background: #1a1a1a;
-	padding: 12px 24px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	z-index: 1000;
-}
+/* Audio player styles moved to styles-audio.css */
 
 audio {
 	width: 100%;

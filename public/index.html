@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Audio Generator</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-audio.css">
 </head>
 <body>
   <div class="container">
@@ -16,9 +17,12 @@
     </div>
     <div id="generator" style="display: none;">
       <textarea id="textArea" placeholder="Enter text or markdown to generate audio"></textarea>
-      <button onclick="generate()">Generate Audio</button>
+      <div class="button-group">
+        <button onclick="generate()" id="generate-btn">Generate Audio</button>
+        <div class="spinner" id="generate-spinner"></div>
+      </div>
       <div class="audio-player">
-        <audio id="audio" controls style="display: none;"></audio>
+        <audio id="audio" controls></audio>
       </div>
       
       <div class="divider"></div>

@@ -59,6 +59,12 @@ function showAuthError(message) {
 async function generate() {
 	const text = document.getElementById("textArea").value;
 	const auth = localStorage.getItem("auth");
+	const generateBtn = document.getElementById("generate-btn");
+	const spinner = document.getElementById("generate-spinner");
+
+	// Show loading state
+	generateBtn.disabled = true;
+	spinner.style.display = "inline-block";
 
 	try {
 		const res = await fetch("/generate", {
@@ -76,20 +82,44 @@ async function generate() {
 			audio.src = `/audio/${data.audioFileName}`;
 			audio.style.display = "block";
 			audio.play();
+
+			addDownloadButton(audio, data.audioFileName);
+
 			loadAudios(); // Refresh the audio list
 		} else {
 			alert("Failed to generate audio");
 		}
 	} catch (error) {
 		alert(`Error generating audio: ${error.message}`);
+	} finally {
+		// Reset loading state
+		generateBtn.disabled = false;
+		spinner.style.display = "none";
 	}
 }
 
+downloadSvg =
+	'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>';
+
+function addDownloadButton(audio, filename) {
+	const downloadBtn = document.createElement("button");
+	downloadBtn.innerHTML = downloadSvg;
+	downloadBtn.style.width = "50px";
+	downloadBtn.style.padding = "0";
+	downloadBtn.onclick = () => {
+		const a = document.createElement("a");
+		a.href = audio.src;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	};
+	audio.parentElement.appendChild(downloadBtn);
+}
+
 async function loadAudios(page = 1) {
-	console.log("Loading audios...");
 	const auth = localStorage.getItem("auth");
 	const itemsPerPage = 3;
-	console.log("Auth token:", auth);
 	try {
 		const audios = await fetchAudios(auth);
 		const contentDiv = document.getElementById("content");
@@ -105,8 +135,6 @@ async function loadAudios(page = 1) {
 
 		// Sort audios by date, most recent first
 		const sortedAudios = sortAudiosByDate(audios);
-		console.log("Sorted audios:", sortedAudios);
-
 		// Calculate pagination
 		const { paginatedAudios, totalPages } = getPaginatedAudios(
 			sortedAudios,
@@ -164,16 +192,19 @@ function createAudioItems(audios, container) {
 		const div = document.createElement("div");
 		div.className = "audio-item";
 		const filename = audio.filename;
-		console.log("Creating audio item:", { date: audio.date, filename });
 
 		div.innerHTML = `
         <span>Date: ${new Date(audio.date).toLocaleString()}</span>
-        <button onclick="playAudio('${filename}')" class="play-button">Play</button>
+        <div class="button-group">
+          <button onclick="playAudio('${filename}')" class="play-button">Play</button>
+          <a href="/audio/${filename}" download="${filename}" class="download-button">
+            <button class="round-button">${downloadSvg}</button>
+          </a>
+        </div>
       `;
 		container.appendChild(div);
 	}
 }
-
 function createPaginationControls(currentPage, totalPages, container) {
 	const paginationDiv = document.createElement("div");
 	paginationDiv.className = "pagination";

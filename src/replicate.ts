@@ -16,7 +16,7 @@ export async function callReplicate(
 	const input = {
 		text: processedText,
 		voice: "af_jessica",
-		speed: 1.2,
+		speed: 1,
 	};
 	console.log("Calling Replicate with input:", input);
 
