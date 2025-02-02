@@ -60,4 +60,4 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/tts-ui:latest
-            ${{ secrets.DOCKERHUB_TOKEN }}/tts-ui:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/tts-ui:${{ github.sha }}
